@@ -1,7 +1,11 @@
-import { Box, Container, Flex, Text, VStack } from "@chakra-ui/react";
+import { Box, Container, Flex, Text, VStack, Spinner, Alert, AlertIcon } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
+import { useEvents, useComments, useVenues } from "../integrations/supabase/index.js";
+
 const Index = () => {
+  const { data: events, error: eventsError, isLoading: eventsLoading } = useEvents();
+  const { data: venues, error: venuesError, isLoading: venuesLoading } = useVenues();
   return (
     <Container maxW="container.xl" p={0}>
       <Flex
@@ -36,6 +40,29 @@ const Index = () => {
         <VStack spacing={4}>
           <Text fontSize="2xl">Your Blank Canvas</Text>
           <Text>Chat with the agent to start making edits.</Text>
+        {eventsLoading || venuesLoading ? (
+            <Spinner />
+          ) : eventsError || venuesError ? (
+            <Alert status="error">
+              <AlertIcon />
+              {eventsError?.message || venuesError?.message}
+            </Alert>
+          ) : (
+            <>
+              <Text>Events:</Text>
+              {events.map(event => (
+                <Box key={event.id}>
+                  <Text>{event.name}</Text>
+                </Box>
+              ))}
+              <Text>Venues:</Text>
+              {venues.map(venue => (
+                <Box key={venue.id}>
+                  <Text>{venue.name}</Text>
+                </Box>
+              ))}
+            </>
+          )}
         </VStack>
       </Box>
     </Container>
